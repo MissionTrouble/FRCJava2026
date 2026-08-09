@@ -4,12 +4,19 @@
 
 package frc.robot;
 
+import java.util.List;
+
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.Constants.Joysticks;
+import frc.robot.input.DriverInputSample;
+import frc.robot.input.InputRecorder;
+import frc.robot.input.InputRecording;
+import frc.robot.input.LiveDriverInputSource;
+import frc.robot.input.ReplayInputsCommand;
+import frc.robot.input.SwitchableDriverInputSource;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.hopper.HopperSubsystem;
 import frc.robot.subsystems.intake.Intake;
@@ -24,8 +31,16 @@ import frc.robot.subsystems.swerve.Swerve;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+    private static final String RECORDING_FILE = "auto-recording.csv";
+
     private final CommandXboxController driverController =
       new CommandXboxController(Joysticks.DRIVER_CONTROLLER_PORT);
+
+    // Everything in configureBindings()/Swerve's axis suppliers reads from `inputs`, so swapping
+    // its delegate is enough to make teleop bindings replay a recorded run during auto.
+    private final LiveDriverInputSource liveInputs = new LiveDriverInputSource(driverController);
+    private final SwitchableDriverInputSource inputs = new SwitchableDriverInputSource(liveInputs);
+    private final InputRecorder recorder = new InputRecorder(liveInputs);
 
   // The robot's subsystems and commands are defined here...
     private final Intake intake;
@@ -38,16 +53,15 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-
     odometry = new Odometry();
 
     this.vision = new Vision();
 
     swerve = new Swerve(odometry,
-      () -> -driverController.getLeftY(),
-      () -> -driverController.getLeftX(),
-      () -> driverController.getRawAxis(4),
-      () -> driverController.getRightTriggerAxis()
+      () -> -inputs.getLeftY(),
+      () -> -inputs.getLeftX(),
+      () -> inputs.getRightX(),
+      () -> inputs.getRightTrigger()
     );
 
     if (Robot.isReal()) {
@@ -76,27 +90,55 @@ public class RobotContainer {
    * predicate, or via the named factories in {@link CommandXboxController}.
    */
   private void configureBindings() {
-    driverController.x().toggleOnTrue(swerve.pointToHubCommand());
-    driverController.start().onTrue(odometry.resetGyro());
-    driverController.back().whileTrue(odometry.resetOdometry(swerve.swerve, vision));
+    // Bound against `inputs` (not driverController directly) so a recorded run can be replayed
+    // through these exact same bindings during auto.
+    new Trigger(inputs::getXButton).toggleOnTrue(swerve.pointToHubCommand());
+    new Trigger(inputs::getStartButton).onTrue(odometry.resetGyro());
+    new Trigger(inputs::getBackButton).whileTrue(odometry.resetOdometry(swerve.swerve, vision));
     if (Robot.isReal()) {
-      driverController.povDown().whileTrue(intake.reverseRoller(0.5));
-      driverController.y().toggleOnTrue(intake.startRoller(0.5));
-      driverController.leftBumper().onTrue(intake.togglePivot(0.5, 0.1));
-      driverController.leftBumper().toggleOnTrue(hopper.startCommand(0.5));
-      driverController.povUp().whileTrue(hopper.reverseCommand(0.5));
-      driverController.rightBumper().whileTrue(shooter.shoot(0.3, 0.05));
+      new Trigger(inputs::getPovDown).whileTrue(intake.reverseRoller(0.5));
+      new Trigger(inputs::getYButton).toggleOnTrue(intake.startRoller(0.5));
+      new Trigger(inputs::getLeftBumper).onTrue(intake.togglePivot(0.5, 0.1));
+      new Trigger(inputs::getLeftBumper).toggleOnTrue(hopper.startCommand(0.5));
+      new Trigger(inputs::getPovUp).whileTrue(hopper.reverseCommand(0.5));
+      new Trigger(inputs::getRightBumper).whileTrue(shooter.shoot(0.3, 0.05));
     }
   }
 
+  /** Call once per loop from {@link Robot#robotPeriodic()} to sample driver input while recording. */
+  public void recordPeriodic() {
+    recorder.periodic();
+  }
+
+  /** Starts recording driver input, discarding whatever was previously recorded. Call from teleopInit(). */
+  public void startRecording() {
+    recorder.start();
+  }
+
+  /** Stops recording (if active) and saves it to the deploy directory. Call from disabledInit(). */
+  public void stopAndSaveRecording() {
+    if (!recorder.isRecording()) {
+      return;
+    }
+    recorder.stop();
+    InputRecording.save(recorder.getSamples(), RECORDING_FILE);
+  }
+
   /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
+   * Use this to pass the autonomous command to the main {@link Robot} class. Replays the most
+   * recently saved recording (see {@link #startRecording()}/{@link #stopAndSaveRecording()}) by
+   * redirecting `inputs` to a playback source for the duration of the recording; the same default
+   * commands/triggers used in teleop then drive the robot exactly as it was driven when recorded.
    *
-   * @return the command to run in autonomous
+   * @return the command to run in autonomous, or null if no recording has been saved yet
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return null;
+    List<DriverInputSample> samples = InputRecording.load(RECORDING_FILE);
+    if (samples.isEmpty()) {
+      return null;
+    }
+
+    return new ReplayInputsCommand(inputs, liveInputs, samples);
   }
 
 }

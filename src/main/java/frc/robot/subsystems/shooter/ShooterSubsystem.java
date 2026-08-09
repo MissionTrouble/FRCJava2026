@@ -7,15 +7,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.odometry.Odometry;
-import frc.robot.subsystems.shooter.mechanisms.ChuteMechanism;
-import frc.robot.subsystems.shooter.mechanisms.FlywheelMechanism;
-import frc.robot.subsystems.shooter.mechanisms.HoodMechanism;
+import frc.robot.subsystems.shooter.mechanisms.Chute;
+import frc.robot.subsystems.shooter.mechanisms.Flywheel;
+import frc.robot.subsystems.shooter.mechanisms.Hood;
 
 public class ShooterSubsystem extends SubsystemBase{
 
-    public final ChuteMechanism chute;
-    public final FlywheelMechanism flywheel;
-    public final HoodMechanism hood;
+    public final Chute chute;
+    public final Flywheel flywheel;
+    public final Hood hood;
     private final Odometry odometry;
     
     private final InterpolatingDoubleTreeMap hoodCalibration =
@@ -32,9 +32,9 @@ public class ShooterSubsystem extends SubsystemBase{
         flywheelCalibration.put(1.0, 2700.0);
         flywheelCalibration.put(2.0, 2900.0);
         flywheelCalibration.put(3.0, 3100.0);
-        chute = new ChuteMechanism();
-        flywheel = new FlywheelMechanism();
-        hood = new HoodMechanism(0);
+        chute = new Chute();
+        flywheel = new Flywheel();
+        hood = new Hood(0);
 
     }
 

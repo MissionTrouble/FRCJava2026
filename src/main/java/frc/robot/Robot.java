@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  @SuppressWarnings("unused")
   private final RobotContainer m_robotContainer;
 
   /**
@@ -43,11 +42,15 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    m_robotContainer.recordPeriodic();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    // Stop and save any in-progress recording so it's available for replay next autonomous.
+    m_robotContainer.stopAndSaveRecording();
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -55,9 +58,8 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    
-    // schedule the autonomous command (example)
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+
     if (m_autonomousCommand != null) {
       CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
@@ -76,6 +78,10 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    // Start recording driver input; stopAndSaveRecording() (in disabledInit()) captures the run
+    // so it can be replayed as the next autonomous.
+    m_robotContainer.startRecording();
   }
 
   /** This function is called periodically during operator control. */

@@ -12,14 +12,14 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import frc.robot.Constants;
 import frc.robot.Constants.MOTORS;
 
-public class HoodMechanism {
+public class Hood {
 
     private final SparkMax hoodMotor;
     private final SparkClosedLoopController hoodController;
 
     private final double hoodOffset;
 
-    public HoodMechanism(double hoodOffset) {
+    public Hood(double hoodOffset) {
         System.out.println("Starting Hood with hoodOffset: " + hoodOffset);
 
         this.hoodOffset = hoodOffset;

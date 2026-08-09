@@ -10,13 +10,12 @@ import frc.robot.Constants;
 import frc.robot.Constants.MOTORS;
 
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
-public class ChuteMechanism extends SubsystemBase {
+public class Chute {
     private final SparkMax chuteMotor;
 
-    public ChuteMechanism() {
+    public Chute() {
         System.out.println("Starting Chute Mechanism");
         chuteMotor = new SparkMax(MOTORS.CHUTE.CAN_ID, MotorType.kBrushless);
         var chuteConfig = Constants.getDefaultMotorConfig().inverted(MOTORS.CHUTE.REVERSED);

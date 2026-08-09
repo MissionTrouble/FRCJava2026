@@ -12,13 +12,13 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import frc.robot.Constants;
 import frc.robot.Constants.MOTORS;
 
-public class FlywheelMechanism {
+public class Flywheel {
 
 
     private final SparkMax flywheelMotor;
     private final SparkClosedLoopController flywheelController;
 
-    public FlywheelMechanism() {
+    public Flywheel() {
         System.out.println("Starting Flywheel Mechanism");
 
         flywheelMotor = new SparkMax(
