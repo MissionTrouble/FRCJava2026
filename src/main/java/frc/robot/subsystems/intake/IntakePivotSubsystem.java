@@ -1,40 +1,47 @@
 package frc.robot.subsystems.intake;
 
-import org.littletonrobotics.junction.Logger;
+import com.revrobotics.PersistMode;
+import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.MOTORS;
+
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+
+
 
 public class IntakePivotSubsystem extends SubsystemBase {
-    private final IntakePivotIO io;
-    private final IntakePivotIOInputsAutoLogged inputs = new IntakePivotIOInputsAutoLogged();
+    private final SparkMax intakePivotMotor;
 
-    public IntakePivotSubsystem(IntakePivotIO io) {
-        this.io = io;
-    }
+    public IntakePivotSubsystem() {
+        System.out.println("Starting Intake Pivot Mechanism");
 
-    @Override
-    public void periodic() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Intake/Pivot", inputs);
+        intakePivotMotor = new SparkMax(MOTORS.INTAKE_PIVOT.CAN_ID, MotorType.kBrushless);
+        var intakePivotConfig = Constants.getDefaultMotorConfig().inverted(MOTORS.INTAKE_PIVOT.REVERSED);
+        intakePivotMotor.configure(intakePivotConfig, null, PersistMode.kPersistParameters);
     }
 
     public void stop() {
-        io.stop();
+        intakePivotMotor.stopMotor();
     }
 
     public void pivotUp(double speed) {
-        io.set(speed);
+        double clampedSpeed = Constants.clamp(speed, 0, 1);
+        intakePivotMotor.set(clampedSpeed);
     }
 
     public void pivotDown(double speed) {
-        io.set(-speed);
+        double clampedSpeed = Constants.clamp(speed, 0, 1);
+        intakePivotMotor.set(-clampedSpeed);
     }
 
     public boolean atUpperLimit() {
-        return inputs.atUpperLimit;
+        return intakePivotMotor.getForwardLimitSwitch().isPressed();
     }
 
     public boolean atLowerLimit() {
-        return inputs.atLowerLimit;
+        return intakePivotMotor.getReverseLimitSwitch().isPressed();
     }
 }

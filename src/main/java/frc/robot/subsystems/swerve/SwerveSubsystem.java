@@ -1,11 +1,15 @@
 package frc.robot.subsystems.swerve;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructArrayTopic;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.networktables.StructTopic;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -15,7 +19,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.EncoderOffsets;
 import frc.robot.Constants.MOTORS;
-import frc.robot.Robot;
+import frc.robot.subsystems.swerve.implementation.SwerveModule;
 import frc.robot.subsystems.odometry.Odometry;
 
 import com.revrobotics.PersistMode;
@@ -28,6 +32,19 @@ private final SwerveModule frontLeft;
     private final SwerveModule backRight;
 
     private final Odometry odometry;
+
+    private final StructArrayTopic<SwerveModuleState> swerveStateTopic =
+        NetworkTableInstance.getDefault()
+            .getStructArrayTopic("/SmartDashboard/SwerveVelocity", SwerveModuleState.struct);
+
+    private final StructTopic<ChassisSpeeds> chassisSpeedsTopic = NetworkTableInstance.getDefault()
+            .getStructTopic("/SmartDashboard/ChassisVelocityActual", ChassisSpeeds.struct);
+
+    private final StructArrayPublisher<SwerveModuleState> swerveStatePublisher = swerveStateTopic.publish();
+    private final StructPublisher<ChassisSpeeds> chassisSpeedsPublisher = chassisSpeedsTopic.publish();
+    private final StructTopic<Pose2d> poseTopic = NetworkTableInstance.getDefault().getStructTopic("/SmartDashboard/RobotPose", Pose2d.struct);
+
+    private final StructPublisher<Pose2d> posePublisher = poseTopic.publish();
 
     public SwerveSubsystem(Odometry odometry) {
         this.odometry = odometry;
@@ -55,18 +72,10 @@ private final SwerveModule frontLeft;
         SparkMax backRightRotation = new SparkMax(MOTORS.BACK_RIGHT_SWERVE_ROTATION.CAN_ID, MotorType.kBrushless);
         backRightRotation.configure(Constants.getSwerveRotationMotorConfig().inverted(MOTORS.BACK_RIGHT_SWERVE_ROTATION.REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        frontLeft = new SwerveModule("FrontLeft", makePowerController(frontLeftPower), makeRotationController(frontLeftRotation, EncoderOffsets.FRONT_LEFT));
-        frontRight = new SwerveModule("FrontRight", makePowerController(frontRightPower), makeRotationController(frontRightRotation, EncoderOffsets.FRONT_RIGHT));
-        backLeft = new SwerveModule("BackLeft", makePowerController(backLeftPower), makeRotationController(backLeftRotation, EncoderOffsets.BACK_LEFT));
-        backRight = new SwerveModule("BackRight", makePowerController(backRightPower), makeRotationController(backRightRotation, EncoderOffsets.BACK_RIGHT));
-    }
-
-    private static PowerControllerIO makePowerController(SparkMax motor) {
-        return Robot.isReal() ? new PowerControllerSpark(motor) : new PowerControllerSim(motor);
-    }
-
-    private static RotationControllerIO makeRotationController(SparkMax motor, double offset) {
-        return Robot.isReal() ? new RotationControllerSpark(motor, offset) : new RotationControllerSim(motor);
+        frontLeft = new SwerveModule("FrontLeft", frontLeftPower, frontLeftRotation, EncoderOffsets.FRONT_LEFT);
+        frontRight = new SwerveModule("FrontRight", frontRightPower, frontRightRotation, EncoderOffsets.FRONT_RIGHT);
+        backLeft = new SwerveModule("BackLeft", backLeftPower, backLeftRotation, EncoderOffsets.BACK_LEFT);
+        backRight = new SwerveModule("BackRight", backRightPower, backRightRotation, EncoderOffsets.BACK_RIGHT);
     }
 
     public void setDesiredStates(SwerveModuleState[] states) {
@@ -75,13 +84,6 @@ private final SwerveModule frontLeft;
         frontRight.setDesiredState(states[1]);
         backLeft.setDesiredState(states[2]);
         backRight.setDesiredState(states[3]);
-    }
-
-    public void updateModuleInputs() {
-        frontLeft.updateInputs();
-        frontRight.updateInputs();
-        backLeft.updateInputs();
-        backRight.updateInputs();
     }
 
     public void updateOdometry() {
@@ -112,13 +114,15 @@ private final SwerveModule frontLeft;
 
     public void log() {
         SwerveModuleState[] states = getModuleStates();
-        Logger.recordOutput("Swerve/ModuleStates", states);
-        Logger.recordOutput("Swerve/ChassisSpeeds", Constants.DriveConstants.SWERVE_DRIVE_KINEMATICS.toChassisSpeeds(states));
+        swerveStatePublisher.set(states);
+
+        chassisSpeedsPublisher.set(Constants.DriveConstants.SWERVE_DRIVE_KINEMATICS.toChassisSpeeds(states));
+
+        posePublisher.set(getOdometryPose());
     }
 
     @Override
     public void periodic() {
-        updateModuleInputs();
         updateOdometry();
         log();
     }

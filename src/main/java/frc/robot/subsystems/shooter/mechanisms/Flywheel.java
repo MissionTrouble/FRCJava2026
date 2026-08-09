@@ -1,32 +1,62 @@
 package frc.robot.subsystems.shooter.mechanisms;
 
-import org.littletonrobotics.junction.Logger;
+
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig;
+
+import frc.robot.Constants;
+import frc.robot.Constants.MOTORS;
 
 public class Flywheel {
-    private final FlywheelIO io;
-    private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
 
-    public Flywheel(FlywheelIO io) {
-        this.io = io;
+
+    private final SparkMax flywheelMotor;
+    private final SparkClosedLoopController flywheelController;
+
+    public Flywheel() {
+        System.out.println("Starting Flywheel Mechanism");
+
+        flywheelMotor = new SparkMax(
+                MOTORS.FLYWHEEL.CAN_ID,
+                MotorType.kBrushless
+        );
+
+        SparkBaseConfig flywheelConfig =
+                Constants.getDefaultMotorConfig()
+                        .inverted(MOTORS.FLYWHEEL.REVERSED);
+
+        flywheelMotor.configure(
+                flywheelConfig,
+                ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters
+        );
+
+        flywheelController = flywheelMotor.getClosedLoopController();
     }
 
-    public void updateInputs() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Shooter/Flywheel", inputs);
-    }
+
 
     public void stop() {
-        io.stop();
+        flywheelMotor.stopMotor();
     }
 
     public void set(double speed) {
-        io.setVelocity(speed);
+        flywheelController.setSetpoint(
+                speed,
+                ControlType.kVelocity
+        );
     }
 
     public boolean atSpeed(double error) {
-        double goal = inputs.setpointRPM;
-        double speed = inputs.velocityRPM;
+        double goal = flywheelController.getSetpoint();
+        double speed = flywheelMotor.getEncoder().getVelocity();
 
-        return goal * (1 - error) < speed && speed < goal * (1 + error);
+        return goal * (1 - error) < speed
+                && speed < goal * (1 + error);
     }
 }

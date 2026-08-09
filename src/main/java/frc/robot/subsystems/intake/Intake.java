@@ -11,9 +11,9 @@ public class Intake {
     public final IntakeRollerSubsystem roller;
     private boolean intakeUp = true;
 
-    public Intake(IntakePivotIO pivotIO, IntakeRollerIO rollerIO) {
-        pivot = new IntakePivotSubsystem(pivotIO);
-        roller = new IntakeRollerSubsystem(rollerIO);
+    public Intake() {
+        pivot = new IntakePivotSubsystem();
+        roller = new IntakeRollerSubsystem();
         pivot.setDefaultCommand(stopPivot());
         roller.setDefaultCommand(stopRoller());
     }

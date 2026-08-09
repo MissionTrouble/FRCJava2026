@@ -1,25 +1,57 @@
 package frc.robot.subsystems.shooter.mechanisms;
 
-import org.littletonrobotics.junction.Logger;
+
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig;
+
+import frc.robot.Constants;
+import frc.robot.Constants.MOTORS;
 
 public class Hood {
-    private final HoodIO io;
-    private final HoodIOInputsAutoLogged inputs = new HoodIOInputsAutoLogged();
 
-    public Hood(HoodIO io) {
-        this.io = io;
+    private final SparkMax hoodMotor;
+    private final SparkClosedLoopController hoodController;
+
+    private final double hoodOffset;
+
+    public Hood(double hoodOffset) {
+        System.out.println("Starting Hood with hoodOffset: " + hoodOffset);
+
+        this.hoodOffset = hoodOffset;
+
+        hoodMotor = new SparkMax(
+                MOTORS.HOOD.CAN_ID,
+                MotorType.kBrushless
+        );
+
+        SparkBaseConfig hoodConfig =
+                Constants.getDefaultMotorConfig()
+                        .inverted(MOTORS.HOOD.REVERSED);
+
+        hoodMotor.configure(
+                hoodConfig,
+                ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters
+        );
+
+        hoodController = hoodMotor.getClosedLoopController();
     }
 
-    public void updateInputs() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Shooter/Hood", inputs);
-    }
+
 
     public void stop() {
-        io.stop();
+        hoodMotor.stopMotor();
     }
 
     public void set(double setpoint) {
-        io.setPosition(setpoint);
+        hoodController.setSetpoint(
+                setpoint - hoodOffset,
+                ControlType.kPosition
+        );
     }
 }

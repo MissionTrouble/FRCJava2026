@@ -3,8 +3,6 @@ package frc.robot.subsystems.odometry;
 
 
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -15,18 +13,23 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.subsystems.vision.Vision;
+import frc.robot.Robot;
+import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.gyro.Gyro;
 import frc.robot.subsystems.gyro.GyroIO;
-import frc.robot.subsystems.gyro.GyroIOInputsAutoLogged;
+import frc.robot.subsystems.gyro.GyroSim;
 import frc.robot.subsystems.swerve.SwerveSubsystem;
 
 public class Odometry {
     private final SwerveDrivePoseEstimator estimator;
-    private final GyroIO gyroIO;
-    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+    private final GyroIO gyro;
 
-    public Odometry(GyroIO gyroIO) {
-        this.gyroIO = gyroIO;
+    public Odometry() {
+        if (Robot.isReal()) {
+            gyro = new Gyro();
+        } else {
+            gyro = new GyroSim();
+        }
         estimator =  new SwerveDrivePoseEstimator(
         DriveConstants.SWERVE_DRIVE_KINEMATICS,
         new Rotation2d(),
@@ -35,10 +38,7 @@ public class Odometry {
     }
 
     public void updateWithModules(SwerveModulePosition[] modulePositions) {
-        gyroIO.updateInputs(gyroInputs);
-        Logger.processInputs("Gyro", gyroInputs);
-        estimator.update(gyroInputs.yawPosition, modulePositions);
-        Logger.recordOutput("Odometry/Pose", getPose());
+        estimator.update(gyro.getRotation2d(), modulePositions);
     }
 
     public void addVisionMeasurement(Pose2d pose, double timestampSeconds,Matrix<N3, N1> stdDevs) {
@@ -50,11 +50,11 @@ public class Odometry {
     }
 
     public Rotation2d getHeading() {
-        return gyroInputs.yawPosition;
+        return gyro.getRotation2d();
     }
 
     public void updateGyro(double speed) {
-        gyroIO.setOmega(speed);
+        gyro.update(speed);
     }
 
     public void resetPose(SwerveSubsystem swerve, Vision vision) {
@@ -62,7 +62,7 @@ public class Odometry {
         // if (pose.isEmpty()) {
         //     return;
         // }
-        // estimator.resetPosition(gyroInputs.yawPosition, swerve.getModulePositions(), pose.get().estimatedPose.toPose2d());
+        // estimator.resetPosition(gyro.getRotation2d(), swerve.getModulePositions(), pose.get().estimatedPose.toPose2d());
     }
 
     public Command resetOdometry(SwerveSubsystem swerve, Vision vision) {
@@ -70,6 +70,6 @@ public class Odometry {
     }
 
     public Command resetGyro() {
-        return Commands.runOnce(gyroIO::reset).withName("resetGyro");
+        return Commands.runOnce(gyro::reset).withName("resetGyro");
     }
 }

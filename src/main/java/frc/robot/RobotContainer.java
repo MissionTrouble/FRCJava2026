@@ -17,30 +17,12 @@ import frc.robot.input.InputRecording;
 import frc.robot.input.LiveDriverInputSource;
 import frc.robot.input.ReplayInputsCommand;
 import frc.robot.input.SwitchableDriverInputSource;
-import frc.robot.subsystems.gyro.GyroIO;
-import frc.robot.subsystems.gyro.GyroIOReal;
-import frc.robot.subsystems.gyro.GyroIOSim;
-import frc.robot.subsystems.hopper.HopperIOSim;
-import frc.robot.subsystems.hopper.HopperIOSpark;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.hopper.HopperSubsystem;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakePivotIOSim;
-import frc.robot.subsystems.intake.IntakePivotIOSpark;
-import frc.robot.subsystems.intake.IntakeRollerIOSim;
-import frc.robot.subsystems.intake.IntakeRollerIOSpark;
 import frc.robot.subsystems.odometry.Odometry;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
-import frc.robot.subsystems.shooter.mechanisms.ChuteIOSim;
-import frc.robot.subsystems.shooter.mechanisms.ChuteIOSpark;
-import frc.robot.subsystems.shooter.mechanisms.FlywheelIOSim;
-import frc.robot.subsystems.shooter.mechanisms.FlywheelIOSpark;
-import frc.robot.subsystems.shooter.mechanisms.HoodIOSim;
-import frc.robot.subsystems.shooter.mechanisms.HoodIOSpark;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -71,13 +53,9 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    GyroIO gyroIO = Robot.isReal() ? new GyroIOReal() : new GyroIOSim();
-    odometry = new Odometry(gyroIO);
+    odometry = new Odometry();
 
-    VisionIO visionIO = Robot.isReal()
-        ? new VisionIOPhotonVision()
-        : (Constants.VISION_SIM ? new VisionIOPhotonVisionSim(odometry::getPose) : new VisionIO() {});
-    vision = new Vision(visionIO, odometry);
+    this.vision = new Vision();
 
     swerve = new Swerve(odometry,
       () -> -inputs.getLeftY(),
@@ -87,19 +65,20 @@ public class RobotContainer {
     );
 
     if (Robot.isReal()) {
-      intake = new Intake(new IntakePivotIOSpark(), new IntakeRollerIOSpark());
-      hopper = new HopperSubsystem(new HopperIOSpark());
-      shooter = new ShooterSubsystem(odometry, new ChuteIOSpark(), new FlywheelIOSpark(), new HoodIOSpark(0));
+      intake = new Intake();
+      hopper = new HopperSubsystem();
+      shooter = new ShooterSubsystem(odometry);
+      intake.pivot.setDefaultCommand(intake.stopPivot());
+      intake.roller.setDefaultCommand(intake.stopRoller());
+      hopper.setDefaultCommand(hopper.stopCommand());
     } else {
-      intake = new Intake(new IntakePivotIOSim(), new IntakeRollerIOSim());
-      hopper = new HopperSubsystem(new HopperIOSim());
-      shooter = new ShooterSubsystem(odometry, new ChuteIOSim(), new FlywheelIOSim(), new HoodIOSim(0));
+      intake = null;
+      hopper = null;
+      shooter = null;
     }
-    intake.pivot.setDefaultCommand(intake.stopPivot());
-    intake.roller.setDefaultCommand(intake.stopRoller());
-    hopper.setDefaultCommand(hopper.stopCommand());
 
     swerve.swerve.setDefaultCommand(swerve.joystickDriveCommand());
+    vision.setDefaultCommand(vision.updatePoseCommand(odometry));
 
     // Configure the trigger bindings
     configureBindings();
@@ -116,12 +95,14 @@ public class RobotContainer {
     new Trigger(inputs::getXButton).toggleOnTrue(swerve.pointToHubCommand());
     new Trigger(inputs::getStartButton).onTrue(odometry.resetGyro());
     new Trigger(inputs::getBackButton).whileTrue(odometry.resetOdometry(swerve.swerve, vision));
-    new Trigger(inputs::getPovDown).whileTrue(intake.reverseRoller(0.5));
-    new Trigger(inputs::getYButton).toggleOnTrue(intake.startRoller(0.5));
-    new Trigger(inputs::getLeftBumper).onTrue(intake.togglePivot(0.5, 0.1));
-    new Trigger(inputs::getLeftBumper).toggleOnTrue(hopper.startCommand(0.5));
-    new Trigger(inputs::getPovUp).whileTrue(hopper.reverseCommand(0.5));
-    new Trigger(inputs::getRightBumper).whileTrue(shooter.shoot(0.3, 0.05));
+    if (Robot.isReal()) {
+      new Trigger(inputs::getPovDown).whileTrue(intake.reverseRoller(0.5));
+      new Trigger(inputs::getYButton).toggleOnTrue(intake.startRoller(0.5));
+      new Trigger(inputs::getLeftBumper).onTrue(intake.togglePivot(0.5, 0.1));
+      new Trigger(inputs::getLeftBumper).toggleOnTrue(hopper.startCommand(0.5));
+      new Trigger(inputs::getPovUp).whileTrue(hopper.reverseCommand(0.5));
+      new Trigger(inputs::getRightBumper).whileTrue(shooter.shoot(0.3, 0.05));
+    }
   }
 
   /** Call once per loop from {@link Robot#robotPeriodic()} to sample driver input while recording. */

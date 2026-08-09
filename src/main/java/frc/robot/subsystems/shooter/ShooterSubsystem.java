@@ -8,11 +8,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.odometry.Odometry;
 import frc.robot.subsystems.shooter.mechanisms.Chute;
-import frc.robot.subsystems.shooter.mechanisms.ChuteIO;
 import frc.robot.subsystems.shooter.mechanisms.Flywheel;
-import frc.robot.subsystems.shooter.mechanisms.FlywheelIO;
 import frc.robot.subsystems.shooter.mechanisms.Hood;
-import frc.robot.subsystems.shooter.mechanisms.HoodIO;
 
 public class ShooterSubsystem extends SubsystemBase{
 
@@ -20,14 +17,14 @@ public class ShooterSubsystem extends SubsystemBase{
     public final Flywheel flywheel;
     public final Hood hood;
     private final Odometry odometry;
-
+    
     private final InterpolatingDoubleTreeMap hoodCalibration =
             new InterpolatingDoubleTreeMap();
 
     private final InterpolatingDoubleTreeMap flywheelCalibration =
             new InterpolatingDoubleTreeMap();
 
-    public ShooterSubsystem(Odometry odometry, ChuteIO chuteIO, FlywheelIO flywheelIO, HoodIO hoodIO) {
+    public ShooterSubsystem(Odometry odometry) {
         this.odometry = odometry;
         hoodCalibration.put(1.0, 0.2);
         hoodCalibration.put(2.0, 0.3);
@@ -35,17 +32,10 @@ public class ShooterSubsystem extends SubsystemBase{
         flywheelCalibration.put(1.0, 2700.0);
         flywheelCalibration.put(2.0, 2900.0);
         flywheelCalibration.put(3.0, 3100.0);
-        chute = new Chute(chuteIO);
-        flywheel = new Flywheel(flywheelIO);
-        hood = new Hood(hoodIO);
+        chute = new Chute();
+        flywheel = new Flywheel();
+        hood = new Hood(0);
 
-    }
-
-    @Override
-    public void periodic() {
-        chute.updateInputs();
-        flywheel.updateInputs();
-        hood.updateInputs();
     }
 
     public Command shoot(double chuteSpeed, double flywheelError) {

@@ -1,36 +1,43 @@
 package frc.robot.subsystems.hopper;
 
-import org.littletonrobotics.junction.Logger;
+import frc.robot.Constants.MOTORS;
+import frc.robot.Constants;
+
+import com.revrobotics.PersistMode;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+
+
+
 public class HopperSubsystem extends SubsystemBase {
-    private final HopperIO io;
-    private final HopperIOInputsAutoLogged inputs = new HopperIOInputsAutoLogged();
+    private final SparkMax hopperMotor;
 
-    public HopperSubsystem(HopperIO io) {
-        this.io = io;
-    }
+    public HopperSubsystem() {
+        System.out.println("Starting Hopper Mechanism");
 
-    @Override
-    public void periodic() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Hopper", inputs);
+        hopperMotor = new SparkMax(MOTORS.HOPPER.CAN_ID, MotorType.kBrushless);
+        var hopperConfig = Constants.getDefaultMotorConfig().inverted(MOTORS.HOPPER.REVERSED);
+        hopperMotor.configure(hopperConfig, null, PersistMode.kPersistParameters);
     }
 
     private void stop() {
-        io.stop();
+        hopperMotor.stopMotor();
     }
 
     private void start(double speed) {
-        io.set(speed);
+        double clampedSpeed = Constants.clamp(speed, -1, 1);
+        hopperMotor.set(clampedSpeed);
     }
 
     public double getSpeed() {
-        return inputs.appliedOutput;
+        return hopperMotor.get();
     }
+
 
     public Command stopCommand() {
         return Commands.runOnce(this::stop, this).withName("Stop Hopper");
