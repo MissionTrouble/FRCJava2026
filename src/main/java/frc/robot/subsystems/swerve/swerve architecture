@@ -1,0 +1,29 @@
+Swerve main class - subsystem holding everything
+Has the commands like joystick drive ,point at point, and drive to point
+
+Swerve mechanism- holds the modules
+chassis velocities
+swerve level logging, wrapper for calling all 4 swerve functions at once
+
+swerve module - 4 of these
+holds powerController and rotationController
+handles setting power and rotations
+
+
+powerControllerIO
+interface for powerController and Sim
+
+rotationControllerIO
+interface for rotationController and Sim
+
+powerController
+controls drive motor
+
+rotationController
+controls rotation motor
+
+powerControllerSim 
+controls drive motor simulation
+
+rotationControllerSim
+controls rotation motorsimulation
