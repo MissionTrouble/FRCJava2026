@@ -1,35 +1,28 @@
 package frc.robot.subsystems.intake;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import frc.robot.Constants;
-
-import frc.robot.Constants.MOTORS;
-
-
-
-
 public class IntakeRollerSubsystem extends SubsystemBase {
-    private final SparkMax intakeRollerMotor;
+    private final IntakeRollerIO io;
+    private final IntakeRollerIOInputsAutoLogged inputs = new IntakeRollerIOInputsAutoLogged();
 
-    public IntakeRollerSubsystem() {
-        System.out.println("Starting Intake Roller Mechanism");
+    public IntakeRollerSubsystem(IntakeRollerIO io) {
+        this.io = io;
+    }
 
-        intakeRollerMotor = new SparkMax(MOTORS.INTAKE_ROLLER.CAN_ID, MotorType.kBrushless);
-        var intakeRollerConfig = Constants.getDefaultMotorConfig().inverted(MOTORS.INTAKE_ROLLER.REVERSED);
-        intakeRollerMotor.configure(intakeRollerConfig, null, PersistMode.kPersistParameters);
+    @Override
+    public void periodic() {
+        io.updateInputs(inputs);
+        Logger.processInputs("Intake/Roller", inputs);
     }
 
     public void stop() {
-        intakeRollerMotor.stopMotor();
+        io.stop();
     }
 
     public void start(double speed) {
-        double clampedSpeed = Constants.clamp(speed, -1, 1);
-        intakeRollerMotor.set(clampedSpeed);
+        io.set(speed);
     }
 }
-

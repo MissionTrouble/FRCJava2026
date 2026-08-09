@@ -2,6 +2,8 @@ package frc.robot.subsystems.swerve;
 
 import java.util.function.DoubleSupplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,12 +11,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructArrayTopic;
-import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.networktables.StructTopic;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -28,15 +24,6 @@ public class Swerve {
     private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
     public final SwerveSubsystem swerve;
     private final Odometry odometry;
-
-    private final StructTopic<ChassisSpeeds> chassisSpeedsTopic = NetworkTableInstance.getDefault()
-            .getStructTopic("/SmartDashboard/ChassisVelocityJoystick", ChassisSpeeds.struct);
-    private final StructPublisher<ChassisSpeeds> chassisSpeedsPublisher = chassisSpeedsTopic.publish();
-
-    private final StructArrayTopic<SwerveModuleState> swerveStateJoystickTopic =
-        NetworkTableInstance.getDefault()
-            .getStructArrayTopic("/SmartDashboard/Joystick/SwerveVelocity", SwerveModuleState.struct);
-    private final StructArrayPublisher<SwerveModuleState> swerveStateJoystickPublisher = swerveStateJoystickTopic.publish();
 
     private final PIDController hubRotationPID = new PIDController(1.8, 0, 0.5); // TODO: tune
     InterpolatingDoubleTreeMap shootTimeCalibration = new InterpolatingDoubleTreeMap();
@@ -80,9 +67,9 @@ public class Swerve {
         xSpeed = xLimiter.calculate(xSpeed * DriveConstants.MAX_SPEED_MPS);
         ySpeed = yLimiter.calculate(ySpeed * DriveConstants.MAX_SPEED_MPS);
         omegaSpeed = turningLimiter.calculate(omegaSpeed * DriveConstants.MAX_ANGULAR_SPEED_MPS);
-        SmartDashboard.putNumber("Joystick/xSpeed", xSpeed);
-        SmartDashboard.putNumber("Joystick/ySpeed", ySpeed);
-        SmartDashboard.putNumber("Joystick/omegaSpeed", omegaSpeed);
+        Logger.recordOutput("Joystick/xSpeed", xSpeed);
+        Logger.recordOutput("Joystick/ySpeed", ySpeed);
+        Logger.recordOutput("Joystick/omegaSpeed", omegaSpeed);
 
         if (!Robot.isReal()) {
             odometry.updateGyro(omegaSpeed);
@@ -95,9 +82,9 @@ public class Swerve {
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, omegaSpeed);
         }
 
-        chassisSpeedsPublisher.set(chassisSpeeds);
+        Logger.recordOutput("Joystick/ChassisSpeeds", chassisSpeeds);
         SwerveModuleState[] states = DriveConstants.SWERVE_DRIVE_KINEMATICS.toSwerveModuleStates(chassisSpeeds);
-        swerveStateJoystickPublisher.set(states);
+        Logger.recordOutput("Joystick/SwerveModuleStates", states);
         swerve.setDesiredStates(states);
     }
 
@@ -146,9 +133,9 @@ public class Swerve {
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, omegaCommand);
         }
 
-        chassisSpeedsPublisher.set(chassisSpeeds);
+        Logger.recordOutput("Joystick/ChassisSpeeds", chassisSpeeds);
         SwerveModuleState[] states = DriveConstants.SWERVE_DRIVE_KINEMATICS.toSwerveModuleStates(chassisSpeeds);
-        swerveStateJoystickPublisher.set(states);
+        Logger.recordOutput("Joystick/SwerveModuleStates", states);
         swerve.setDesiredStates(states);
     }
 }
