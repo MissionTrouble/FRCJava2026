@@ -5,25 +5,17 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Joysticks;
-import frc.robot.subsystems.gyro.Gyro;
-import frc.robot.subsystems.gyro.GyroIO;
-import frc.robot.subsystems.gyro.GyroSim;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.hopper.HopperSubsystem;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.odometry.Odometry;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -39,26 +31,17 @@ public class RobotContainer {
     private final Intake intake;
     private final HopperSubsystem hopper;
     private final ShooterSubsystem shooter;
-    private final VisionIO visionIO;
+    private final Vision vision;
     private final Swerve swerve;
     private final Odometry odometry;
-    private final GyroIO gyro;
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    if (Robot.isReal()) {
-      gyro = new Gyro();
-    } else {
-      gyro = new GyroSim();
-    }
-    odometry = new Odometry(gyro,
-      new SwerveDrivePoseEstimator(
-        DriveConstants.SWERVE_DRIVE_KINEMATICS,
-        new Rotation2d(),
-        DriveConstants.EMPTY_SWERVE_MODULE_POSITIONS,
-        new Pose2d()));
 
+    odometry = new Odometry();
+
+    this.vision = new Vision();
 
     swerve = new Swerve(odometry,
       () -> -driverController.getLeftY(),
@@ -74,15 +57,14 @@ public class RobotContainer {
       intake.pivot.setDefaultCommand(intake.stopPivot());
       intake.roller.setDefaultCommand(intake.stopRoller());
       hopper.setDefaultCommand(hopper.stopCommand());
-      this.visionIO = new Vision();
     } else {
       intake = null;
       hopper = null;
       shooter = null;
-      this.visionIO = new VisionSim("camera");
     }
 
     swerve.swerve.setDefaultCommand(swerve.joystickDriveCommand());
+    vision.setDefaultCommand(vision.updatePoseCommand(odometry));
 
     // Configure the trigger bindings
     configureBindings();
@@ -96,7 +78,7 @@ public class RobotContainer {
   private void configureBindings() {
     driverController.x().toggleOnTrue(swerve.pointToHubCommand());
     driverController.start().onTrue(odometry.resetGyro());
-    driverController.back().whileTrue(odometry.resetOdometry(swerve.swerve, visionIO));
+    driverController.back().whileTrue(odometry.resetOdometry(swerve.swerve, vision));
     if (Robot.isReal()) {
       driverController.povDown().whileTrue(intake.reverseRoller(0.5));
       driverController.y().toggleOnTrue(intake.startRoller(0.5));

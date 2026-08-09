@@ -6,11 +6,15 @@ package frc.robot;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 
@@ -27,31 +31,12 @@ import com.revrobotics.spark.config.SparkMaxConfig;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final Boolean VISION_SIM = false;
+  public static final Boolean VISION_SIM = true;
   public static final Translation2d HUB_LOCATION = new Translation2d(4.62534, 4.035);
-  public static final class OIConstants {
-          public static final int kDriverControllerPort = 0;
+  public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
+  public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+  
 
-          public static final int kDriverYAxis = 1;
-          public static final int kDriverXAxis = 0;
-          public static final int kDriverRotAxis = 2;
-          public static final int kDriverLeftTrigger = 3;
-          public static final int kDriverRightTrigger = 4;
-
-          public static final double kDeadband = 0.05;
-      }
-  public static final class XboxButtons {
-    public static final int A = 1;
-    public static final int B = 2;
-    public static final int X = 3;
-    public static final int Y = 4;
-    public static final int LEFT_BUMPER = 5;
-    public static final int RIGHT_BUMPER = 6;
-    public static final int BACK = 7;
-    public static final int START = 8;
-    public static final int LEFT_STICK = 9;
-    public static final int RIGHT_STICK = 10;
-  }
   public static double clamp(double value, double min, double max) {
         // This unusual condition allows keeping only one branch
         // on common path when min < max and neither of them is NaN.
@@ -85,15 +70,13 @@ public final class Constants {
   }
 
  public static final class DriveConstants {
-    public static final double ROBOT_WIDTH = Units.inchesToMeters(26);
-    // Distance between right and left wheels
-    public static final double ROBOT_LENGTH = Units.inchesToMeters(21);
-    // Distance between front and back wheels
+    private static final double ROBOT_WIDTH = Units.inchesToMeters(26);// Distance between right and left wheels
+    private static final double ROBOT_LENGTH = Units.inchesToMeters(21);// Distance between front and back wheels
 
-    public static final Translation2d FRONT_LEFT_LOCATION = new Translation2d(ROBOT_LENGTH / 2,  ROBOT_WIDTH / 2);
-    public static final Translation2d FRONT_RIGHT_LOCATION = new Translation2d(ROBOT_LENGTH / 2,  -ROBOT_WIDTH / 2);
-    public static final Translation2d BACK_LEFT_LOCATION = new Translation2d(-ROBOT_LENGTH / 2,  ROBOT_WIDTH / 2);
-    public static final Translation2d BACK_RIGHT_LOCATION = new Translation2d(-ROBOT_LENGTH / 2,  -ROBOT_WIDTH / 2);
+    private static final Translation2d FRONT_LEFT_LOCATION = new Translation2d(ROBOT_LENGTH / 2,  ROBOT_WIDTH / 2);
+    private static final Translation2d FRONT_RIGHT_LOCATION = new Translation2d(ROBOT_LENGTH / 2,  -ROBOT_WIDTH / 2);
+    private static final Translation2d BACK_LEFT_LOCATION = new Translation2d(-ROBOT_LENGTH / 2,  ROBOT_WIDTH / 2);
+    private static final Translation2d BACK_RIGHT_LOCATION = new Translation2d(-ROBOT_LENGTH / 2,  -ROBOT_WIDTH / 2);
     public static final SwerveModulePosition[] EMPTY_SWERVE_MODULE_POSITIONS = {
           new SwerveModulePosition(),
           new SwerveModulePosition(),
@@ -115,21 +98,11 @@ public final class Constants {
     public static final Boolean FIELD_ORIENTED = true;
 
  }
-  public static final class EncoderOffsets {
-        public static final double FRONT_LEFT_ENCODER_OFFSET = 3.99;
-        public static final double FRONT_RIGHT_ENCODER_OFFSET = 4.3;
-        public static final double BACK_LEFT_ENCODER_OFFSET = 5.6;
-        public static final double BACK_RIGHT_ENCODER_OFFSET = 1.42;
-  }
+
   public static final class ModuleConstants {
         public static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(4);
-        public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER_METERS*Math.PI;
         public static final double DRIVE_MOTOR_GEAR_RATIO = 6.75; //mk4 L2
-        public static final double TURNING_MOTOR_GEAR_RATIO = 12.8;
         public static final double DRIVE_ENCODER_ROT_2_METERS = (Math.PI * WHEEL_DIAMETER_METERS)/DRIVE_MOTOR_GEAR_RATIO;
-        public static final double DRIVE_ENCODER_RPM_2_MPS = DRIVE_ENCODER_ROT_2_METERS / 60.0;
-        public static final double TURNING_ENCODER_ROT_2_RAD = (2.0 * Math.PI)/TURNING_MOTOR_GEAR_RATIO;
-        public static final double TURNING_ENCODER_RPM_2_RAD_PER_SEC = TURNING_ENCODER_ROT_2_RAD / 60.0;
         public static final double MODULE_TURNING_CONTROLER_P = 0.9;
         public static final double MODULE_TURNING_CONTROLER_I = 0;
         public static final double MODULE_TURNING_CONTROLER_D = 0.1;
@@ -162,49 +135,42 @@ public final class Constants {
               ModuleConstants.MODULE_TURNING_CONTROLER_D);
       return config;
   }
+  public static class MotorInfo {
+      public final int CAN_ID;
+      public final boolean REVERSED;
 
-  public static class CAN_INFO {
-    public static final int EXAMPLE_MOTOR_ID = -1;
-
-
-    public static final int MAIN_CAN_BUS = 0;
-
-    public static final int INTAKE_ROLLER_MOTOR_ID = 0;
-    public static final int INTAKE_PIVOT_MOTOR_ID = 0;
-    public static final int HOPPER_MOTOR_ID = 0;
-    public static final int FLYWHEEL_MOTOR_ID = 0;
-    public static final int HOOD_MOTOR_ID = 0;
-    public static final int CHUTE_MOTOR_ID = 0;
-
-    public static final int FRONT_LEFT_SWERVE_POWER_MOTOR_ID = 1;
-    public static final int FRONT_RIGHT_SWERVE_POWER_MOTOR_ID = 3;
-    public static final int BACK_LEFT_SWERVE_POWER_MOTOR_ID = 5;
-    public static final int BACK_RIGHT_SWERVE_POWER_MOTOR_ID = 7;
-
-
-    public static final int FRONT_LEFT_SWERVE_ROTATION_MOTOR_ID = 2;
-    public static final int FRONT_RIGHT_SWERVE_ROTATION_MOTOR_ID = 4;
-    public static final int BACK_LEFT_SWERVE_ROTATION_MOTOR_ID = 6;
-    public static final int BACK_RIGHT_SWERVE_ROTATION_MOTOR_ID = 8;
+      public MotorInfo(int id, boolean reversed) {
+          this.CAN_ID = id;
+          this.REVERSED = reversed;
+      }
   }
-  public static class REVERSED_MOTORS {
-    public static final boolean EXAMPLE_MOTOR_REVERSED = false;
-    public static final boolean INTAKE_ROLLER_MOTOR_REVERSED = false;
-    public static final boolean INTAKE_PIVOT_MOTOR_REVERSED = false;
-    public static final boolean HOPPER_MOTOR_REVERSED = false;
-    public static final boolean FLYWHEEL_MOTOR_REVERSED = false;
-    public static final boolean HOOD_MOTOR_REVERSED = false;
-    public static final boolean CHUTE_MOTOR_REVERSED = false;
 
-    public static final boolean FRONT_LEFT_SWERVE_POWER_MOTOR_REVERSED = false;
-    public static final boolean FRONT_RIGHT_SWERVE_POWER_MOTOR_REVERSED = false;
-    public static final boolean BACK_LEFT_SWERVE_POWER_MOTOR_REVERSED = false;
-    public static final boolean BACK_RIGHT_SWERVE_POWER_MOTOR_REVERSED = false;
-
-
-    public static final boolean FRONT_LEFT_SWERVE_ROTATION_MOTOR_REVERSED = false;
-    public static final boolean FRONT_RIGHT_SWERVE_ROTATION_MOTOR_REVERSED = false;
-    public static final boolean BACK_LEFT_SWERVE_ROTATION_MOTOR_REVERSED = false;
-    public static final boolean BACK_RIGHT_SWERVE_ROTATION_MOTOR_REVERSED = false;
+  public static final class EncoderOffsets {
+        public static final double FRONT_LEFT = 3.99;
+        public static final double FRONT_RIGHT = 4.3;
+        public static final double BACK_LEFT = 5.6;
+        public static final double BACK_RIGHT = 1.42;
   }
+
+public static class MOTORS {
+    public static final MotorInfo EXAMPLE = new MotorInfo(-1, false);
+
+    public static final MotorInfo INTAKE_ROLLER = new MotorInfo(0, false);
+    public static final MotorInfo INTAKE_PIVOT = new MotorInfo(0, false);
+    public static final MotorInfo HOPPER = new MotorInfo(0, false);
+    public static final MotorInfo FLYWHEEL = new MotorInfo(0, false);
+    public static final MotorInfo HOOD = new MotorInfo(0, false);
+    public static final MotorInfo CHUTE = new MotorInfo(0, false);
+
+
+    public static final MotorInfo FRONT_LEFT_SWERVE_POWER = new MotorInfo(1, false);
+    public static final MotorInfo FRONT_RIGHT_SWERVE_POWER = new MotorInfo(3, false);
+    public static final MotorInfo BACK_LEFT_SWERVE_POWER = new MotorInfo(5, false);
+    public static final MotorInfo BACK_RIGHT_SWERVE_POWER = new MotorInfo(7, false);
+
+    public static final MotorInfo FRONT_LEFT_SWERVE_ROTATION = new MotorInfo(2, false);
+    public static final MotorInfo FRONT_RIGHT_SWERVE_ROTATION = new MotorInfo(4, false);
+    public static final MotorInfo BACK_LEFT_SWERVE_ROTATION = new MotorInfo(6, false);
+    public static final MotorInfo BACK_RIGHT_SWERVE_ROTATION = new MotorInfo(8, false);
+}
 }

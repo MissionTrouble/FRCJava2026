@@ -7,8 +7,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import frc.robot.Constants;
 
-import frc.robot.Constants.CAN_INFO;
-import frc.robot.Constants.REVERSED_MOTORS;
+import frc.robot.Constants.MOTORS;
 
 
 
@@ -19,8 +18,8 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     public IntakeRollerSubsystem() {
         System.out.println("Starting Intake Roller Mechanism");
 
-        intakeRollerMotor = new SparkMax(CAN_INFO.INTAKE_ROLLER_MOTOR_ID, MotorType.kBrushless);
-        var intakeRollerConfig = Constants.getDefaultMotorConfig().inverted(REVERSED_MOTORS.INTAKE_ROLLER_MOTOR_REVERSED);
+        intakeRollerMotor = new SparkMax(MOTORS.INTAKE_ROLLER.CAN_ID, MotorType.kBrushless);
+        var intakeRollerConfig = Constants.getDefaultMotorConfig().inverted(MOTORS.INTAKE_ROLLER.REVERSED);
         intakeRollerMotor.configure(intakeRollerConfig, null, PersistMode.kPersistParameters);
     }
 

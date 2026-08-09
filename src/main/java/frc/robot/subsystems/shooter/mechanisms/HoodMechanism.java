@@ -10,8 +10,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
 
 import frc.robot.Constants;
-import frc.robot.Constants.CAN_INFO;
-import frc.robot.Constants.REVERSED_MOTORS;
+import frc.robot.Constants.MOTORS;
 
 public class HoodMechanism {
 
@@ -26,13 +25,13 @@ public class HoodMechanism {
         this.hoodOffset = hoodOffset;
 
         hoodMotor = new SparkMax(
-                CAN_INFO.HOOD_MOTOR_ID,
+                MOTORS.HOOD.CAN_ID,
                 MotorType.kBrushless
         );
 
         SparkBaseConfig hoodConfig =
                 Constants.getDefaultMotorConfig()
-                        .inverted(REVERSED_MOTORS.HOOD_MOTOR_REVERSED);
+                        .inverted(MOTORS.HOOD.REVERSED);
 
         hoodMotor.configure(
                 hoodConfig,

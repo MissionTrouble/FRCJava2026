@@ -16,10 +16,9 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.CAN_INFO;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.EncoderOffsets;
-import frc.robot.Constants.REVERSED_MOTORS;
+import frc.robot.Constants.MOTORS;
 import frc.robot.subsystems.swerve.implementation.SwerveModule;
 import frc.robot.subsystems.odometry.Odometry;
 
@@ -49,34 +48,34 @@ private final SwerveModule frontLeft;
 
     public SwerveSubsystem(Odometry odometry) {
         this.odometry = odometry;
-        SparkMax frontLeftPower = new SparkMax(CAN_INFO.FRONT_LEFT_SWERVE_POWER_MOTOR_ID, MotorType.kBrushless);
-        frontLeftPower.configure(Constants.getSwerveDriveMotorConfig().inverted(REVERSED_MOTORS.FRONT_LEFT_SWERVE_POWER_MOTOR_REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        SparkMax frontLeftPower = new SparkMax(MOTORS.FRONT_LEFT_SWERVE_POWER.CAN_ID, MotorType.kBrushless);
+        frontLeftPower.configure(Constants.getSwerveDriveMotorConfig().inverted(MOTORS.FRONT_LEFT_SWERVE_POWER.REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        SparkMax frontLeftRotation = new SparkMax(CAN_INFO.FRONT_LEFT_SWERVE_ROTATION_MOTOR_ID, MotorType.kBrushless);
-        frontLeftRotation.configure(Constants.getSwerveRotationMotorConfig().inverted(REVERSED_MOTORS.FRONT_LEFT_SWERVE_ROTATION_MOTOR_REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        SparkMax frontLeftRotation = new SparkMax(MOTORS.FRONT_LEFT_SWERVE_ROTATION.CAN_ID, MotorType.kBrushless);
+        frontLeftRotation.configure(Constants.getSwerveRotationMotorConfig().inverted(MOTORS.FRONT_LEFT_SWERVE_ROTATION.REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        SparkMax frontRightPower = new SparkMax(CAN_INFO.FRONT_RIGHT_SWERVE_POWER_MOTOR_ID, MotorType.kBrushless);
-        frontRightPower.configure(Constants.getSwerveDriveMotorConfig().inverted(REVERSED_MOTORS.FRONT_RIGHT_SWERVE_POWER_MOTOR_REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        SparkMax frontRightPower = new SparkMax(MOTORS.FRONT_RIGHT_SWERVE_POWER.CAN_ID, MotorType.kBrushless);
+        frontRightPower.configure(Constants.getSwerveDriveMotorConfig().inverted(MOTORS.FRONT_RIGHT_SWERVE_POWER.REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        SparkMax frontRightRotation = new SparkMax(CAN_INFO.FRONT_RIGHT_SWERVE_ROTATION_MOTOR_ID, MotorType.kBrushless);
-        frontRightRotation.configure(Constants.getSwerveRotationMotorConfig().inverted(REVERSED_MOTORS.FRONT_RIGHT_SWERVE_ROTATION_MOTOR_REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        SparkMax frontRightRotation = new SparkMax(MOTORS.FRONT_RIGHT_SWERVE_ROTATION.CAN_ID, MotorType.kBrushless);
+        frontRightRotation.configure(Constants.getSwerveRotationMotorConfig().inverted(MOTORS.FRONT_RIGHT_SWERVE_ROTATION.REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        SparkMax backLeftPower = new SparkMax(CAN_INFO.BACK_LEFT_SWERVE_POWER_MOTOR_ID, MotorType.kBrushless);
-        backLeftPower.configure(Constants.getSwerveDriveMotorConfig().inverted(REVERSED_MOTORS.BACK_LEFT_SWERVE_POWER_MOTOR_REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        SparkMax backLeftPower = new SparkMax(MOTORS.BACK_LEFT_SWERVE_POWER.CAN_ID, MotorType.kBrushless);
+        backLeftPower.configure(Constants.getSwerveDriveMotorConfig().inverted(MOTORS.BACK_LEFT_SWERVE_POWER.REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        SparkMax backLeftRotation = new SparkMax(CAN_INFO.BACK_LEFT_SWERVE_ROTATION_MOTOR_ID, MotorType.kBrushless);
-        backLeftRotation.configure(Constants.getSwerveRotationMotorConfig().inverted(REVERSED_MOTORS.BACK_LEFT_SWERVE_ROTATION_MOTOR_REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        SparkMax backLeftRotation = new SparkMax(MOTORS.BACK_LEFT_SWERVE_ROTATION.CAN_ID, MotorType.kBrushless);
+        backLeftRotation.configure(Constants.getSwerveRotationMotorConfig().inverted(MOTORS.BACK_LEFT_SWERVE_ROTATION.REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        SparkMax backRightPower = new SparkMax(CAN_INFO.BACK_RIGHT_SWERVE_POWER_MOTOR_ID, MotorType.kBrushless);
-        backRightPower.configure(Constants.getSwerveDriveMotorConfig().inverted(REVERSED_MOTORS.BACK_RIGHT_SWERVE_POWER_MOTOR_REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        SparkMax backRightPower = new SparkMax(MOTORS.BACK_RIGHT_SWERVE_POWER.CAN_ID, MotorType.kBrushless);
+        backRightPower.configure(Constants.getSwerveDriveMotorConfig().inverted(MOTORS.BACK_RIGHT_SWERVE_POWER.REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        SparkMax backRightRotation = new SparkMax(CAN_INFO.BACK_RIGHT_SWERVE_ROTATION_MOTOR_ID, MotorType.kBrushless);
-        backRightRotation.configure(Constants.getSwerveRotationMotorConfig().inverted(REVERSED_MOTORS.BACK_RIGHT_SWERVE_ROTATION_MOTOR_REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        SparkMax backRightRotation = new SparkMax(MOTORS.BACK_RIGHT_SWERVE_ROTATION.CAN_ID, MotorType.kBrushless);
+        backRightRotation.configure(Constants.getSwerveRotationMotorConfig().inverted(MOTORS.BACK_RIGHT_SWERVE_ROTATION.REVERSED), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        frontLeft = new SwerveModule("FrontLeft", frontLeftPower, frontLeftRotation, EncoderOffsets.FRONT_LEFT_ENCODER_OFFSET);
-        frontRight = new SwerveModule("FrontRight", frontRightPower, frontRightRotation, EncoderOffsets.FRONT_RIGHT_ENCODER_OFFSET);
-        backLeft = new SwerveModule("BackLeft", backLeftPower, backLeftRotation, EncoderOffsets.BACK_LEFT_ENCODER_OFFSET);
-        backRight = new SwerveModule("BackRight", backRightPower, backRightRotation, EncoderOffsets.BACK_RIGHT_ENCODER_OFFSET);
+        frontLeft = new SwerveModule("FrontLeft", frontLeftPower, frontLeftRotation, EncoderOffsets.FRONT_LEFT);
+        frontRight = new SwerveModule("FrontRight", frontRightPower, frontRightRotation, EncoderOffsets.FRONT_RIGHT);
+        backLeft = new SwerveModule("BackLeft", backLeftPower, backLeftRotation, EncoderOffsets.BACK_LEFT);
+        backRight = new SwerveModule("BackRight", backRightPower, backRightRotation, EncoderOffsets.BACK_RIGHT);
     }
 
     public void setDesiredStates(SwerveModuleState[] states) {

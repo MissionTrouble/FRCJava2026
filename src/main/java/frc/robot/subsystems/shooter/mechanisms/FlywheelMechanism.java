@@ -10,8 +10,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
 
 import frc.robot.Constants;
-import frc.robot.Constants.CAN_INFO;
-import frc.robot.Constants.REVERSED_MOTORS;
+import frc.robot.Constants.MOTORS;
 
 public class FlywheelMechanism {
 
@@ -23,13 +22,13 @@ public class FlywheelMechanism {
         System.out.println("Starting Flywheel Mechanism");
 
         flywheelMotor = new SparkMax(
-                CAN_INFO.FLYWHEEL_MOTOR_ID,
+                MOTORS.FLYWHEEL.CAN_ID,
                 MotorType.kBrushless
         );
 
         SparkBaseConfig flywheelConfig =
                 Constants.getDefaultMotorConfig()
-                        .inverted(REVERSED_MOTORS.FLYWHEEL_MOTOR_REVERSED);
+                        .inverted(MOTORS.FLYWHEEL.REVERSED);
 
         flywheelMotor.configure(
                 flywheelConfig,

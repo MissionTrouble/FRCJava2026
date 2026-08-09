@@ -1,7 +1,6 @@
 package frc.robot.subsystems.hopper;
 
-import frc.robot.Constants.CAN_INFO;
-import frc.robot.Constants.REVERSED_MOTORS;
+import frc.robot.Constants.MOTORS;
 import frc.robot.Constants;
 
 import com.revrobotics.PersistMode;
@@ -21,8 +20,8 @@ public class HopperSubsystem extends SubsystemBase {
     public HopperSubsystem() {
         System.out.println("Starting Hopper Mechanism");
 
-        hopperMotor = new SparkMax(CAN_INFO.HOPPER_MOTOR_ID, MotorType.kBrushless);
-        var hopperConfig = Constants.getDefaultMotorConfig().inverted(REVERSED_MOTORS.HOPPER_MOTOR_REVERSED);
+        hopperMotor = new SparkMax(MOTORS.HOPPER.CAN_ID, MotorType.kBrushless);
+        var hopperConfig = Constants.getDefaultMotorConfig().inverted(MOTORS.HOPPER.REVERSED);
         hopperMotor.configure(hopperConfig, null, PersistMode.kPersistParameters);
     }
 

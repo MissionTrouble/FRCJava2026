@@ -5,8 +5,7 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.CAN_INFO;
-import frc.robot.Constants.REVERSED_MOTORS;
+import frc.robot.Constants.MOTORS;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -19,8 +18,8 @@ public class IntakePivotSubsystem extends SubsystemBase {
     public IntakePivotSubsystem() {
         System.out.println("Starting Intake Pivot Mechanism");
 
-        intakePivotMotor = new SparkMax(CAN_INFO.INTAKE_PIVOT_MOTOR_ID, MotorType.kBrushless);
-        var intakePivotConfig = Constants.getDefaultMotorConfig().inverted(REVERSED_MOTORS.INTAKE_PIVOT_MOTOR_REVERSED);
+        intakePivotMotor = new SparkMax(MOTORS.INTAKE_PIVOT.CAN_ID, MotorType.kBrushless);
+        var intakePivotConfig = Constants.getDefaultMotorConfig().inverted(MOTORS.INTAKE_PIVOT.REVERSED);
         intakePivotMotor.configure(intakePivotConfig, null, PersistMode.kPersistParameters);
     }
 

@@ -7,8 +7,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import frc.robot.Constants;
-import frc.robot.Constants.CAN_INFO;
-import frc.robot.Constants.REVERSED_MOTORS;
+import frc.robot.Constants.MOTORS;
 
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,8 +18,8 @@ public class ChuteMechanism extends SubsystemBase {
 
     public ChuteMechanism() {
         System.out.println("Starting Chute Mechanism");
-        chuteMotor = new SparkMax(CAN_INFO.CHUTE_MOTOR_ID, MotorType.kBrushless);
-        var chuteConfig = Constants.getDefaultMotorConfig().inverted(REVERSED_MOTORS.CHUTE_MOTOR_REVERSED);
+        chuteMotor = new SparkMax(MOTORS.CHUTE.CAN_ID, MotorType.kBrushless);
+        var chuteConfig = Constants.getDefaultMotorConfig().inverted(MOTORS.CHUTE.REVERSED);
         chuteMotor.configure(chuteConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
